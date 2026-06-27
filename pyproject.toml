@@ -5,6 +5,7 @@ description = "AWS WAF solver API using wreq"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "cryptography>=49.0.0",
     "fastapi>=0.138.1",
     "uvicorn>=0.49.0",
     "wreq>=0.12.0",
