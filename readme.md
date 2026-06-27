@@ -10,14 +10,16 @@ A lightweight FastAPI service that solves AWS WAF challenges and returns a valid
 
 - Python 3.10+
 - `wreq`
-- `AWSSolver`
 - `fastapi`
 - `uvicorn`
 
 ## Installation
 
+This project uses [uv](https://docs.astral.sh/uv/) for dependency management instead of pip.
+
 ```bash
-pip install fastapi uvicorn wreq
+uv venv
+uv pip install fastapi uvicorn wreq
 ```
 
 > Make sure `AWSSolver` is installed or present in your project directory.
@@ -25,7 +27,7 @@ pip install fastapi uvicorn wreq
 ## Start
 
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 8000
+uv run uvicorn main:app --host 0.0.0.0 --port 8080
 ```
 
 ## Usage
@@ -43,7 +45,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 ### Example
 
 ```bash
-curl -X POST http://localhost:8000/solve \
+curl -X POST http://localhost:8080/solve \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://www.binance.com/",
