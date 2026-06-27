@@ -9,7 +9,7 @@ A lightweight FastAPI service that solves AWS WAF challenges and returns a valid
 ## Requirements
 
 - Python 3.10+
-- `rnet`
+- `wreq`
 - `AWSSolver`
 - `fastapi`
 - `uvicorn`
@@ -17,7 +17,7 @@ A lightweight FastAPI service that solves AWS WAF challenges and returns a valid
 ## Installation
 
 ```bash
-pip install fastapi uvicorn rnet
+pip install fastapi uvicorn wreq
 ```
 
 > Make sure `AWSSolver` is installed or present in your project directory.

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from rnet import Client, Emulation, Method
+from wreq import Client, Emulation
 from AWSSolver.Solver import AwsSolver
 from datetime import timedelta
 from urllib.parse import urlparse
@@ -31,9 +31,8 @@ async def solve(request: SolveRequest):
     try:
         client = Client(emulation=Emulation.Chrome143, cookie_store=True)
 
-        response = await client.request(
-            method=getattr(Method, "GET"),
-            url=request.url,
+        response = await client.get(
+            request.url,
             timeout=timedelta(seconds=15),
             headers={"user-agent": request.user_agent},
         )

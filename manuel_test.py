@@ -1,7 +1,7 @@
-from rnet import Client, Emulation, Method, redirect
-import httpx
 import asyncio
 from datetime import timedelta
+from wreq import Client, Emulation
+from wreq.redirect import Policy
 from AWSSolver.Solver import AwsSolver
 
 URL = "https://www.binance.com/en"
@@ -23,9 +23,9 @@ HEADERS = {
             'user-agent': f'{USER_AGENT}',
         }
 async def main():
-    
-    client = Client(emulation=Emulation.Chrome143, cookie_store=True, redirect=redirect.Policy.limited(max=5))
-    response = await client.request(method=getattr(Method, "GET"), url=f"{URL}", timeout=timedelta(seconds = 10), headers=HEADERS)
+
+    client = Client(emulation=Emulation.Chrome143, cookie_store=True, redirect=Policy.limited(5))
+    response = await client.get(f"{URL}", timeout=timedelta(seconds=10), headers=HEADERS)
     text = await response.text()
     print(f"[+] Got HTML ({len(text)} bytes)")
 
@@ -36,9 +36,9 @@ async def main():
     cookies = {
         "aws-waf-token": token
     }
-    response = await client.request(method=getattr(Method, "GET"), url=f"{URL}", timeout=timedelta(seconds = 10), headers=HEADERS, cookies = cookies)
+    response = await client.get(f"{URL}", timeout=timedelta(seconds=10), headers=HEADERS, cookies=cookies)
     text = await response.text()
-    print(f"[+] Status: {response.status.as_int()}")
+    print(f"[+] Status: {response.status}")
     print(f"[+] Response: {text[:500]}")
 
 if __name__ == "__main__":

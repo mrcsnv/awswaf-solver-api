@@ -1,9 +1,9 @@
 import json
-from rnet import Client, Emulation, Method, redirect
-from datetime import timedelta
-from .PayloadHandler import build_everything
 import random
-from rnet import Client, Emulation, Method, redirect, Multipart, Part
+from datetime import timedelta
+from wreq import Client, Emulation, Multipart, Part
+from wreq.redirect import Policy
+from .PayloadHandler import build_everything
 from .SolutionTokenHandler import CHALLENGES
 
 BANDWIDTH_CHALLENGE = "ha9faaffd31b4d5ede2a2e19d2d7fd525f66fee61911511960dcbb52d3c48ce25"
@@ -11,7 +11,7 @@ BANDWIDTH_CHALLENGE = "ha9faaffd31b4d5ede2a2e19d2d7fd525f66fee61911511960dcbb52d
 class AwsSolver:
 
     def __init__(self, user_agent, domain):
-        
+
         self.headers = {
             "connection": "keep-alive",
             'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -38,13 +38,17 @@ class AwsSolver:
         goku_props = json.loads(html.split("window.gokuProps = ")[1].split(";")[0])
         host = html.split("src=\"https://")[1].split("/challenge.js")[0]
         return goku_props, host
-    
+
 
     async def _get_final_values(self, host_url):
-
-        response = await Client(emulation=Emulation.Chrome143, cookie_store=True, redirect=redirect.Policy.none()).request(method=getattr(Method, "GET"), url=f"https://{host_url}/inputs?client=browser", timeout=timedelta(seconds = 10), headers=self.headers)
+        client = Client(emulation=Emulation.Chrome143, cookie_store=True, redirect=Policy.none())
+        response = await client.get(
+            f"https://{host_url}/inputs?client=browser",
+            timeout=timedelta(seconds=10),
+            headers=self.headers,
+        )
         return await response.json()
-    
+
     def _build_payload(self, input: dict, goku_props):
         verify = CHALLENGES[input["challenge_type"]]
         payload = build_everything(user_agent=self.user_agent)
@@ -67,7 +71,7 @@ class AwsSolver:
                 "solution_data": solution_b64,
                 "solution_metadata": solution_metadata,
             }
-    
+
     def _build_metrics(self):
         return [
             {"name": "2",         "value": random.uniform(0, 1),    "unit": "2"},
@@ -95,31 +99,30 @@ class AwsSolver:
             {"name": "8",         "value": 1,                        "unit": "4"},
         ]
 
-    
+
     async def post_payload(self, payload, host_url):
+        client = Client(emulation=Emulation.Chrome143)
         if payload.get("_is_bandwidth"):
             multipart = Multipart(
                 Part(
                     name="solution_data",
-                    value=payload["solution_data"].encode("utf-8")
+                    value=payload["solution_data"].encode("utf-8"),
                 ),
                 Part(
                     name="solution_metadata",
                     value=json.dumps(payload["solution_metadata"], separators=(",", ":")).encode("utf-8"),
                 ),
             )
-            response = await Client(emulation=Emulation.Chrome143).request(
-                method=getattr(Method, "POST"),
-                url=f"https://{host_url}/mp_verify",
+            response = await client.post(
+                f"https://{host_url}/mp_verify",
                 timeout=timedelta(seconds=10),
                 headers=self.headers,
                 multipart=multipart,
             )
         else:
             payload.pop("_is_bandwidth", None)
-            response = await Client(emulation=Emulation.Chrome143).request(
-                method=getattr(Method, "POST"),
-                url=f"https://{host_url}/verify",
+            response = await client.post(
+                f"https://{host_url}/verify",
                 timeout=timedelta(seconds=10),
                 headers=self.headers,
                 json=payload,
@@ -129,7 +132,7 @@ class AwsSolver:
         return token
 
 
-    
+
     async def solve(self, site_html: str):
 
         goku,host_url = self.extract(site_html)
@@ -137,11 +140,3 @@ class AwsSolver:
         payload = self._build_payload(values, goku)
         temp = await self.post_payload(payload, host_url)
         return temp["token"]
-
-
-
-    
-
-    
-
-
