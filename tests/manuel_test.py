@@ -1,10 +1,15 @@
 import asyncio
+import sys
 from datetime import timedelta
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from wreq import Client, Emulation
 from wreq.redirect import Policy
 from AWSSolver.Solver import AwsSolver
 
-URL = "https://www.binance.com/en"
+URL = "https://checkout.viagogo.com/secure/buy/checkout?ID=87a22d6b-fe1e-4cba-8c63-1681625fde8c%7c13167882629%7c4%7c0"
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
 HEADERS = {
             "connection": "keep-alive",
@@ -29,7 +34,7 @@ async def main():
     text = await response.text()
     print(f"[+] Got HTML ({len(text)} bytes)")
 
-    solver = AwsSolver(user_agent=USER_AGENT, domain="www.binance.com")
+    solver = AwsSolver(user_agent=USER_AGENT, domain="www.viagogo.com")
     token = await solver.solve(text)
 
     print(f"[+] Token: {token}")

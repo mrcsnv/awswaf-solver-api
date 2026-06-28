@@ -35,8 +35,11 @@ class AwsSolver:
             self.domain = domain
 
     def extract(self,html: str):
-        goku_props = json.loads(html.split("window.gokuProps = ")[1].split(";")[0])
-        host = html.split("src=\"https://")[1].split("/challenge.js")[0]
+        if "/challenge.js" not in html:
+            raise ValueError("No AWS WAF challenge detected on the page")
+        parts = html.split("window.gokuProps = ")
+        goku_props = json.loads(parts[1].split(";")[0]) if len(parts) > 1 else None
+        host = html.split("/challenge.js")[0].rsplit("src=\"https://", 1)[1]
         return goku_props, host
 
 
